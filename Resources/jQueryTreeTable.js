@@ -73,7 +73,7 @@
 
         innerContainer.append(thead);
         innerContainer.append(tbody);
-        container.append(innerContainer);s
+        container.append(innerContainer);
 
         return container;
     };
@@ -104,29 +104,45 @@
     }
 
     jQueryTreeTable.prototype.onLoad = function () {
-
+        var self = this;
 
         $("#" + this.ID).css('overflow', 'auto');
         $("#" + this.ID).css('height', '100%');
 
-        var id ="#" + this.ID + "t";
-        $(id).treetable({ expandable: true });
-
-        $(id + " tbody").on("mousedown", "tr", function () {
+        var id = "#" + this.ID;
+        $(id + "t").treetable({ expandable: true });
+        $(id + "t tbody").on("mousedown", "tr", function () {
             $(".selected").not(this).removeClass("selected");
             $(this).toggleClass("selected");
+            self.CellElement.Value = this.dataset.ttId;
+            self.commitValue();
         });
 
 
     }
 
     jQueryTreeTable.prototype.getValueFromElement = function () {
-        return null;
+        return this.CellElement.Value;
     };
 
     jQueryTreeTable.prototype.setValueToElement = function (element, value) {
-
+        if (this.CellElement.Value !== value) {
+            this.CellElement.Value = value;
+        }
+        this.selectTreeNode(value);
     };
+
+    jQueryTreeTable.prototype.selectTreeNode = function (value) {
+
+        var trList = $("#" + this.ID + "t tbody").children("tr");
+
+        for (var i = 0; i < trList.length; i++){
+            if (trList[i].dataset.ttId === value) {
+                $(trList[i]).not(this).removeClass("selected");
+                $(trList[i]).toggleClass("selected");
+            }
+        };
+    }
 
     jQueryTreeTable.prototype.disable = function () {
         _super.prototype.disable.call(this);
