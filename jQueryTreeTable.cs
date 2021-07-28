@@ -20,12 +20,81 @@ namespace jQueryTreeTable
 {
     [Designer("jQueryTreeTable.jQueryTreeTableDesigner, jQueryTreeTable")]
     [Icon("pack://application:,,,/jQueryTreeTable;component/Resources/Icon.png")]
-    public class jQueryTreeTable : CellType
+    public class jQueryTreeTable : CellType, IReferenceTable
     {
         public override string ToString()
         {
             return "树型表";
         }
+
+        public IEnumerable<LocatedObject<TableCheckInfo>> GetTableInfo(LocationIndicator location)
+        {
+            var result = new List<LocatedObject<TableCheckInfo>>();
+            TableCheckInfo tableInfo = new TableCheckInfo(this.SetBindingTable.TableName);
+            var myFieldInfos = this.SetBindingTable.MyFieldInfos;
+
+            string[] columns = new string[myFieldInfos.Length];
+            foreach (var s in myFieldInfos)
+            {
+                columns.Append(s.ShowField);
+            }
+            tableInfo.AddColumns(columns);
+            //Add direct table info
+            result.Add(new LocatedObject<TableCheckInfo>(tableInfo, location.AppendProperty("TableName")));
+            //Add QueryCondition table info
+            if (this.SetBindingTable.QueryCondition is IReferenceTable)
+            {
+                result.AddRange((this.SetBindingTable.QueryCondition as IReferenceTable).GetTableInfo(location.AppendProperty("QueryCondition")));
+            }
+            //Add SortCondition table info
+            if (this.SetBindingTable.SortCondition is IReferenceTable)
+            {
+                result.AddRange((this.SetBindingTable.SortCondition as IReferenceTable).GetTableInfo(location.AppendProperty("SortCondition")));
+            }
+            return result;
+        }
+
+        public void RenameTableColumnName(string tableName, string oldName, string newName)
+        {
+            TableCheckInfo tableInfo = new TableCheckInfo(this.SetBindingTable.TableName);
+            if (string.Equals(this.SetBindingTable.TableName, tableName))
+            {
+                var myFieldInfos = this.SetBindingTable.MyFieldInfos;
+
+                foreach (var s in myFieldInfos)
+                {
+                    if (string.Equals(s.ShowField, oldName))
+                    {
+                        s.ShowField = newName;
+                    }
+                }
+            }
+            if (this.SetBindingTable.QueryCondition is IReferenceTable)
+            {
+                (this.SetBindingTable.QueryCondition as IReferenceTable).RenameTableColumnName(tableName, oldName, newName);
+            }
+            if (this.SetBindingTable.SortCondition is IReferenceTable)
+            {
+                (this.SetBindingTable.SortCondition as IReferenceTable).RenameTableColumnName(tableName, oldName, newName);
+            }
+        }
+
+        public void RenameTableName(string oldName, string newName)
+        {
+            if (string.Equals(this.SetBindingTable.TableName, oldName))
+            {
+                this.SetBindingTable.TableName = newName;
+            }
+            if (this.SetBindingTable.QueryCondition is IReferenceTable)
+            {
+                (this.SetBindingTable.QueryCondition as IReferenceTable).RenameTableName(oldName, newName);
+            }
+            if (this.SetBindingTable.SortCondition is IReferenceTable)
+            {
+                (this.SetBindingTable.SortCondition as IReferenceTable).RenameTableName(oldName, newName);
+            }
+        }
+
         public jQueryTreeTable()
         {
         }
@@ -34,7 +103,6 @@ namespace jQueryTreeTable
         {
             get; set;
         }
-
 
     }
     public class jQueryTreeTableDesigner : CellTypeDesigner<jQueryTreeTable>
@@ -53,11 +121,13 @@ namespace jQueryTreeTable
             ListView listView= new ListView();
             var tableName = this.CellType.SetBindingTable.TableName;
             var myFieldInfos = this.CellType.SetBindingTable.MyFieldInfos;
+            var id = this.CellType.SetBindingTable.ID;
+            var relatedParentID = this.CellType.SetBindingTable.RelatedParentID;
+
             List<string> columns = new List<string>();
             foreach(var s in myFieldInfos) {
                 columns.Add(s.ShowField);
             }
-
             GridView gridView = new GridView();
 
             for (int c = 0; c < columns.Count; c++)
@@ -70,14 +140,16 @@ namespace jQueryTreeTable
                 };
                 gridView.Columns.Add(title);
             }
-
             listView.View = gridView;
-
+            columns.Add(id);
+            columns.Add(relatedParentID);
             //get table data for preview.
             var tableData = drawingHelper.GetTableDataForPreview(tableName, columns, null, true);
-            if (tableData != null)
+
+            var data = ReSortTable(tableData, relatedParentID, id);
+            if (data != null)
             {
-                foreach (var row in tableData)
+                foreach (var row in data)
                 {
                     listView.Items.Add(JsonConvert.DeserializeObject<object>(JsonConvert.SerializeObject(row)));
                 }
@@ -87,6 +159,38 @@ namespace jQueryTreeTable
             grid.Children.Add(listView);
 
             return grid;
+        }
+
+        private List<Dictionary<string, object>> ReSortTable(List<Dictionary<string, object>> tableData, string relatedParentID, string id)
+        {
+            var data =new List<Dictionary<string, object>>();
+            for (var i = 0; i < tableData.Count; i++)
+            {
+                if (tableData[i][relatedParentID] == null)
+                {
+                    data.Add(tableData[i]);
+                    addTreeNode(tableData, data, i, relatedParentID, id);
+                }
+            }
+            return data;
+        }
+
+        private void addTreeNode(List<Dictionary<string, object>> tableData, List<Dictionary<string, object>> data, int index, string relatedParentID, string id)
+        {
+            var sign = false;
+            for (var i = 0; i < tableData.Count; i++)
+            {
+                if (string.Equals(tableData[i][relatedParentID], tableData[index][id]))
+                {
+                    data.Add(tableData[i]);
+                    sign = true;
+                    addTreeNode(tableData, data, i, relatedParentID, id);
+                }
+            }
+            if (sign == false)
+            {
+                return;
+            }
         }
 
     }
