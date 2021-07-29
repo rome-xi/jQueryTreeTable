@@ -6,82 +6,103 @@
 
     jQueryTreeTable.prototype.createContent = function () {
         var self = this;
-
-        var element = this.CellElement;
-        var cellTypeMetaData = element.CellType;
+        var page = Forguncy.Page;
+        var container = $("<div id='" + self.ID + "'></div>");
+        page.bind("PageDefaultDataLoaded", function () {
+            var cellTypeMetaData = self.CellElement.CellType;
+            var listViewData = self.getListViewData(cellTypeMetaData);
+            var data = self.reSortTable(cellTypeMetaData, listViewData);
+            var innerContainer = self.createTable(cellTypeMetaData, data);
+            container.append(innerContainer);
+            self.decorateTable();
+            self.selectTreeNode(self.getValueFromElement());
+        });
+        return container;
+    };
+    jQueryTreeTable.prototype.getListViewData = function (cellTypeMetaData) {
         var tableName = cellTypeMetaData.SetBindingTable.TableName;
         var id = cellTypeMetaData.SetBindingTable.ID;
         var relatedParentID = cellTypeMetaData.SetBindingTable.RelatedParentID;
         var fieldInfos = cellTypeMetaData.SetBindingTable.MyFieldInfos;
+        var fields = fieldInfos.map((info) => { return info.ShowField; });
 
-        var innerContainer = $("<table id='" + this.ID + "t'></table>");
-        var thead = $("<thead></thead>");
-        var head_tr = $("<tr></tr>");
-        s
+        fields.push(id);
+        fields.push(relatedParentID);
+        var queryFields = Array.from(new Set(fields));
+
+        var page = Forguncy.Page;
+        var listView = page.getListView(tableName);
+        var listViewData = new Array();
+        for (var i = 0; i < listView.getRowCount(); i++) {
+            var map = new Map();
+            for (var j = 0; j < queryFields.length; j++) {
+                var queryField = "" + queryFields[j];
+                map.set(queryFields[j], listView.getValue(i, queryField));
+            }
+            listViewData.push(map);
+        }
+        return listViewData;
+    }
+
+    jQueryTreeTable.prototype.createTable = function (cellTypeMetaData, data) {
+        var id = cellTypeMetaData.SetBindingTable.ID;
+        var relatedParentID = cellTypeMetaData.SetBindingTable.RelatedParentID;
+        var fieldInfos = cellTypeMetaData.SetBindingTable.MyFieldInfos;
         var fields = fieldInfos.map((info) => { return info.ShowField; });
         var names = fieldInfos.map((info) => { return info.FieldName; });
 
-        for (var s in names) {
-            var th = $("<th>" + names[s] + "</th>");
+        var innerContainer = $("<table id='" + this.ID + "t'></table>");
+        var thead = $("<thead></thead>");
+        var tbody = $("<tbody></tbody>")
+        var head_tr = $("<tr></tr>");
+
+        for (var name in names) {
+            var th = $("<th>" + names[name] + "</th>");
             head_tr.append(th);
         }
         thead.append(head_tr);
 
-        fields.push(id);
-        fields.push(relatedParentID);
-
-        fields = Array.from(new Set(fields));
-        var param = {
-            TableName: tableName,
-            Columns: fields,
-            QueryCondition: cellTypeMetaData.SetBindingTable.QueryCondition,
-            QueryPolicy: {
-                Distinct: false,
-                QueryNullPolicy: Forguncy.QueryNullPolicy.QueryAllItemsWhenValueIsNull,
-                IgnoreCache: false
-            },
-            SortCondition: cellTypeMetaData.SetBindingTable.SortCondition
-        };
-        var formulaCalcContext = {
-            IsInMasterPage: false
-        };
-        var tableData;
-        Forguncy.getTableDataByCondition(param, formulaCalcContext, function (dataStr) {
-            tableData = dataStr;
-        }, false);
-
-        data = this.ReSortTable(tableData, relatedParentID, id);
-
-        var tbody = $("<tbody></tbody>")
         for (var i = 0; i < data.length; i++) {
-            if (data[i][relatedParentID] === null) {
-                var tr = $("<tr data-tt-id='" + data[i][id] + "'></tr>");
+            if (data[i].get(relatedParentID) === null) {
+                var tr = $("<tr data-tt-id='" + data[i].get(id) + "'></tr>");
             } else {
-                var tr = $("<tr data-tt-id='" + data[i][id] + "' data-tt-parent-id='" + data[i][relatedParentID] + "'></tr>")
+                var tr = $("<tr data-tt-id='" + data[i].get(id) + "' data-tt-parent-id='" + data[i].get(relatedParentID) + "'></tr>")
             }
-            var fields = fieldInfos.map((info) => { return info.ShowField; });
             for (let j = 0; j < fields.length; j++) {
-                var temp = data[i][fields[j]];
+                var temp = data[i].get(fields[j]);
                 temp = temp === null ? "" : temp;
                 var td = $("<td>" + temp + "</td>");
                 tr.append(td);
             }
             tbody.append(tr);
         }
-
-        var container = $("<div id='" + this.ID + "'></div>");
-
         innerContainer.append(thead);
         innerContainer.append(tbody);
-        container.append(innerContainer);
 
-        return container;
-    };
+        return innerContainer;
+    }
+
+    jQueryTreeTable.prototype.decorateTable = function () {
+        var id = "#" + this.ID;
+        var self = this;
+
+        $(id).css('overflow', 'auto');
+        $(id).css('height', '100%');
+        $(id + "t").treetable({ expandable: true });
+        $(id + "t tbody").on("mousedown", "tr", function () {
+            $(".selected").not(this).removeClass("selected");
+            $(this).toggleClass("selected");
+            self.CellElement.Value = this.dataset.ttId;
+            self.commitValue();
+        });
+    }
     //jQueryTreeTable要求表的记录顺序和展示顺序相同
-    jQueryTreeTable.prototype.ReSortTable = function (tableData, relatedParentID, id) {
+    jQueryTreeTable.prototype.reSortTable = function (cellTypeMetaData, tableData) {
+        var id = cellTypeMetaData.SetBindingTable.ID;
+        var relatedParentID = cellTypeMetaData.SetBindingTable.RelatedParentID;
         var data = new Array();
         for (var i = 0; i < tableData.length; i++) {
-            if (tableData[i][relatedParentID] === null) {
+            if (tableData[i].get(relatedParentID) === null) {
                 data.push(tableData[i]);
                 this.addTreeNode(tableData, data, i, relatedParentID, id);
             }
@@ -92,7 +113,7 @@
     jQueryTreeTable.prototype.addTreeNode = function (tableData, data, index, relatedParentID, id) {
         var sign = false;
         for (var i = 0; i < tableData.length; i++) {
-            if (tableData[i][relatedParentID] === tableData[index][id]) {
+            if (tableData[i].get(relatedParentID) === tableData[index].get(id)) {
                 data.push(tableData[i]);
                 sign = true;
                 this.addTreeNode(tableData, data, i, relatedParentID, id);
@@ -101,24 +122,6 @@
         if (sign === false) {
             return;
         }
-    }
-
-    jQueryTreeTable.prototype.onLoad = function () {
-        var self = this;
-
-        $("#" + this.ID).css('overflow', 'auto');
-        $("#" + this.ID).css('height', '100%');
-
-        var id = "#" + this.ID;
-        $(id + "t").treetable({ expandable: true });
-        $(id + "t tbody").on("mousedown", "tr", function () {
-            $(".selected").not(this).removeClass("selected");
-            $(this).toggleClass("selected");
-            self.CellElement.Value = this.dataset.ttId;
-            self.commitValue();
-        });
-
-
     }
 
     jQueryTreeTable.prototype.getValueFromElement = function () {
@@ -137,7 +140,7 @@
         var trList = $("#" + this.ID + "t tbody").children("tr");
 
         for (var i = 0; i < trList.length; i++){
-            if (trList[i].dataset.ttId === value) {
+            if (trList[i].dataset.ttId === ("" + value)) {
                 $(trList[i]).not(this).removeClass("selected");
                 $(trList[i]).toggleClass("selected");
             }
