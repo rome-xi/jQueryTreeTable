@@ -15,27 +15,56 @@ namespace jQueryTreeTable
 {
     [Designer("jQueryTreeTable.jQueryTreeTableDesigner, jQueryTreeTable")]
     [Icon("pack://application:,,,/jQueryTreeTable;component/Resources/Icon.png")]
-    public class jQueryTreeTable : CellType, IReferenceListView
+    public class jQueryTreeTable : CellType, IReferenceListView, IReferenceListViewColumn
     {
         public jQueryTreeTable()
         {
         }
+
         [DisplayName("设置绑定表格参数")]
-        public TableInfo SetBindingTable
+        public ListViewInfo SetBindingListView
+        {
+            get; set;
+        }
+
+        [DisplayName("设置展开方式")]
+        public UnfoldingMethod SetUnfoldingMethod
         {
             get; set;
         }
 
         public IEnumerable<string> GetListViewNames()
         {
-            yield return SetBindingTable.TableName;
+            yield return SetBindingListView.ListViewName;
         }
 
         public void RenameListviewName(string oldName, string newName)
         {
-            if (string.Equals(SetBindingTable.TableName, oldName))
+            if (string.Equals(SetBindingListView.ListViewName, oldName))
             {
-                SetBindingTable.TableName = newName;
+                SetBindingListView.ListViewName = newName;
+            }
+        }
+
+        public void RenameListviewColumnName(string ListViewName, string oldName, string newName)
+        {
+            if (string.Equals(SetBindingListView.ListViewName, ListViewName))
+            {
+                if (string.Equals(SetBindingListView.ID, oldName))
+                {
+                    SetBindingListView.ID = newName;
+                }
+                if (string.Equals(SetBindingListView.RelatedParentID, oldName))
+                {
+                    SetBindingListView.RelatedParentID = newName;
+                }
+                foreach (var myFieldInfo in SetBindingListView.MyFieldInfos)
+                {
+                    if (string.Equals(myFieldInfo.ShowField, oldName))
+                    {
+                        myFieldInfo.ShowField = newName;
+                    }
+                }
             }
         }
 
@@ -48,79 +77,35 @@ namespace jQueryTreeTable
     {
         public override EditorSetting GetEditorSetting(PropertyDescriptor property, IBuilderContext builderContext)
         {
-            return property.Name == nameof(jQueryTreeTable.SetBindingTable)
-                ? new HyperlinkEditorSetting(new SetBindingTableCommand(builderContext))
+            return property.Name == nameof(jQueryTreeTable.SetBindingListView)
+                ? new HyperlinkEditorSetting(new SetBindingListViewCommand(builderContext))
                 : base.GetEditorSetting(property, builderContext);
         }
 
-        //public override FrameworkElement GetDrawingControl(ICellInfo cellInfo, IDrawingHelper drawingHelper)
-        //{
-        //    TableInfo tableInfo = this.CellType.SetBindingTable;
-        //    ListView listView = new ListView();
-        //    var tableName = tableInfo.TableName;
-        //    var myFieldInfos = tableInfo.MyFieldInfos;
-        //    var id = tableInfo.ID;
-        //    var relatedParentID = tableInfo.RelatedParentID;
-
-        //    List<string> columns = new List<string>();
-        //    foreach(var s in myFieldInfos) {
-        //        columns.Add(s.ShowField);
-        //    }
-        //    GridView gridView = new GridView();
-
-        //    for (int c = 0; c < columns.Count; c++)
-        //    {
-        //        GridViewColumn title = new GridViewColumn
-        //        {
-        //            Header = columns[c],
-        //            DisplayMemberBinding = new Binding(columns[c]),
-        //            Width = 120
-        //        };
-        //        gridView.Columns.Add(title);
-        //    }
-        //    listView.View = gridView;
-        //    columns.Add(id);
-        //    columns.Add(relatedParentID);
-        //    //get table data for preview.
-        //    var tableData = drawingHelper.GetTableDataForPreview(tableName, columns, null, true);\
-        //    var data = ReSortTable(tableData, relatedParentID, id);
-        //    if (data != null)
-        //    {
-        //        foreach (Dictionary<string, object> row in data)
-        //        {
-        //            listView.Items.Add(JsonConvert.DeserializeObject<object>(JsonConvert.SerializeObject(row)));
-        //        }
-        //    }
-        //    Grid grid = new Grid();
-        //    grid.Children.Add(listView);
-
-        //    return grid;
-        //}
-
-        private List<Dictionary<string, object>> ReSortTable(List<Dictionary<string, object>> tableData, string relatedParentID, string id)
+        private List<Dictionary<string, object>> ReSortListView(List<Dictionary<string, object>> ListViewData, string relatedParentID, string id)
         {
             List<Dictionary<string, object>> data = new List<Dictionary<string, object>>();
-            for (int i = 0; i < tableData.Count; i++)
+            for (int i = 0; i < ListViewData.Count; i++)
             {
-                if (tableData[i][relatedParentID] == null)
+                if (ListViewData[i][relatedParentID] == null)
                 {
-                    data.Add(tableData[i]);
-                    AddTreeNode(tableData, data, i, relatedParentID, id);
+                    data.Add(ListViewData[i]);
+                    AddTreeNode(ListViewData, data, i, relatedParentID, id);
                 }
             }
             return data;
         }
 
-        private void AddTreeNode(List<Dictionary<string, object>> tableData, List<Dictionary<string, object>> data, int index, string relatedParentID, string id)
+        private void AddTreeNode(List<Dictionary<string, object>> ListViewData, List<Dictionary<string, object>> data, int index, string relatedParentID, string id)
         {
             bool sign = false;
-            for (int i = 0; i < tableData.Count; i++)
+            for (int i = 0; i < ListViewData.Count; i++)
             {
-                if (string.Equals(tableData[i][relatedParentID], tableData[index][id]))
+                if (string.Equals(ListViewData[i][relatedParentID], ListViewData[index][id]))
                 {
-                    data.Add(tableData[i]);
+                    data.Add(ListViewData[i]);
                     sign = true;
-                    AddTreeNode(tableData, data, i, relatedParentID, id);
+                    AddTreeNode(ListViewData, data, i, relatedParentID, id);
                 }
             }
             if (sign == false)
@@ -130,15 +115,15 @@ namespace jQueryTreeTable
         }
 
     }
-    public class SetBindingTableCommand : ICommand
+    public class SetBindingListViewCommand : ICommand
     {
         private Window window;
         private IEditorSettingsDataContext dataContext;
         private IBuilderContext BuilderContext { get; set; }
 
-        private SetBindingTable control;
+        private SetBindingListView control;
 
-        public SetBindingTableCommand(IBuilderContext builderContext)
+        public SetBindingListViewCommand(IBuilderContext builderContext)
         {
             BuilderContext = builderContext;
         }
@@ -153,8 +138,8 @@ namespace jQueryTreeTable
         {
             dataContext = parameter as IEditorSettingsDataContext;
 
-            control = new SetBindingTable(BuilderContext);
-            control.ViewModel.Model = dataContext?.Value as TableInfo;
+            control = new SetBindingListView(BuilderContext);
+            control.ViewModel.Model = dataContext?.Value as ListViewInfo;
             StackPanel buttonControl = new StackPanel() { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 5, 5, 10) };
             Button okButton = new Button() { Content = "确认", Width = 80 };
             okButton.Click += OkButton_Click;
@@ -211,9 +196,9 @@ namespace jQueryTreeTable
             return new MyFieldInfo(ShowField, FieldName);
         }
     }
-    public class TableInfo
+    public class ListViewInfo
     {
-        public string TableName
+        public string ListViewName
         {
             get; set;
         }
@@ -229,13 +214,17 @@ namespace jQueryTreeTable
         {
             get; set;
         }
-        public TableInfo(string tableName, string id, string relatedParentID, MyFieldInfo[] myFieldInfos)
+        public ListViewInfo(string listViewName, string id, string relatedParentID, MyFieldInfo[] myFieldInfos)
         {
-            TableName = tableName;
+            ListViewName = listViewName;
             ID = id;
             RelatedParentID = relatedParentID;
             MyFieldInfos = myFieldInfos;
         }
     }
-
+    public enum UnfoldingMethod
+    {
+        默认收起,
+        默认展开
+    }
 }

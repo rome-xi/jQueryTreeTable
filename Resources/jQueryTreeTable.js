@@ -10,20 +10,21 @@
         var container = $("<div id='" + self.ID + "'></div>");
         page.bind("PageDefaultDataLoaded", function () {
             var cellTypeMetaData = self.CellElement.CellType;
+            var unfoldingMethod = cellTypeMetaData.SetUnfoldingMethod;
             var listViewData = self.getListViewData(cellTypeMetaData);
             var data = self.reSortTable(cellTypeMetaData, listViewData);
             var innerContainer = self.createTable(cellTypeMetaData, data);
             container.append(innerContainer);
-            self.decorateTable();
+            self.decorateTable(unfoldingMethod);
             self.selectTreeNode(self.getValueFromElement());
         });
         return container;
     };
     jQueryTreeTable.prototype.getListViewData = function (cellTypeMetaData) {
-        var tableName = cellTypeMetaData.SetBindingTable.TableName;
-        var id = cellTypeMetaData.SetBindingTable.ID;
-        var relatedParentID = cellTypeMetaData.SetBindingTable.RelatedParentID;
-        var fieldInfos = cellTypeMetaData.SetBindingTable.MyFieldInfos;
+        var listViewName = cellTypeMetaData.SetBindingListView.ListViewName;
+        var id = cellTypeMetaData.SetBindingListView.ID;
+        var relatedParentID = cellTypeMetaData.SetBindingListView.RelatedParentID;
+        var fieldInfos = cellTypeMetaData.SetBindingListView.MyFieldInfos;
         var fields = fieldInfos.map((info) => { return info.ShowField; });
 
         fields.push(id);
@@ -31,7 +32,7 @@
         var queryFields = Array.from(new Set(fields));
 
         var page = Forguncy.Page;
-        var listView = page.getListView(tableName);
+        var listView = page.getListView(listViewName);
         var listViewData = new Array();
         for (var i = 0; i < listView.getRowCount(); i++) {
             var map = new Map();
@@ -45,9 +46,9 @@
     }
 
     jQueryTreeTable.prototype.createTable = function (cellTypeMetaData, data) {
-        var id = cellTypeMetaData.SetBindingTable.ID;
-        var relatedParentID = cellTypeMetaData.SetBindingTable.RelatedParentID;
-        var fieldInfos = cellTypeMetaData.SetBindingTable.MyFieldInfos;
+        var id = cellTypeMetaData.SetBindingListView.ID;
+        var relatedParentID = cellTypeMetaData.SetBindingListView.RelatedParentID;
+        var fieldInfos = cellTypeMetaData.SetBindingListView.MyFieldInfos;
         var fields = fieldInfos.map((info) => { return info.ShowField; });
         var names = fieldInfos.map((info) => { return info.FieldName; });
 
@@ -82,13 +83,16 @@
         return innerContainer;
     }
 
-    jQueryTreeTable.prototype.decorateTable = function () {
+    jQueryTreeTable.prototype.decorateTable = function (unfoldingMethod) {
         var id = "#" + this.ID;
         var self = this;
 
         $(id).css('overflow', 'auto');
         $(id).css('height', '100%');
         $(id + "t").treetable({ expandable: true });
+        if (unfoldingMethod === 1) {
+            $(id + "t").treetable('expandAll');
+        }
         $(id + "t tbody").on("mousedown", "tr", function () {
             $(".selected").not(this).removeClass("selected");
             $(this).toggleClass("selected");
@@ -98,8 +102,8 @@
     }
     //jQueryTreeTable要求表的记录顺序和展示顺序相同
     jQueryTreeTable.prototype.reSortTable = function (cellTypeMetaData, tableData) {
-        var id = cellTypeMetaData.SetBindingTable.ID;
-        var relatedParentID = cellTypeMetaData.SetBindingTable.RelatedParentID;
+        var id = cellTypeMetaData.SetBindingListView.ID;
+        var relatedParentID = cellTypeMetaData.SetBindingListView.RelatedParentID;
         var data = new Array();
         for (var i = 0; i < tableData.length; i++) {
             if (tableData[i].get(relatedParentID) === null) {

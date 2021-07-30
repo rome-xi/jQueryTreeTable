@@ -1,3 +1,15 @@
 ﻿table.treetable {
+    border: solid #000 !important;
+    border-width: 1px 0px 0px 1px !important;
     margin: 0 !important;
 }
+
+table.treetable thead tr th {
+    border: solid #000 !important;
+    border-width: 0px 1px 1px 0px !important;
+}
+
+    table.treetable tbody tr td {
+        border: solid #000 !important;
+        border-width: 0px 1px 1px 0px !important;
+    }

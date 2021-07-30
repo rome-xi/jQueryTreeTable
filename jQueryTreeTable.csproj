@@ -74,14 +74,13 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Control\SetBindingTable.xaml.cs">
-      <DependentUpon>SetBindingTable.xaml</DependentUpon>
+    <Compile Include="Control\SetBindingListView.xaml.cs">
+      <DependentUpon>SetBindingListView.xaml</DependentUpon>
     </Compile>
     <Compile Include="jQueryTreeTable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="PluginConfig.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -116,7 +115,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Control\SetBindingTable.xaml">
+    <Page Include="Control\SetBindingListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -10,17 +10,17 @@ using System.Windows.Controls;
 
 namespace jQueryTreeTable.Control
 {
-    public partial class SetBindingTable : UserControl
+    public partial class SetBindingListView : UserControl
     {
-        public SetBindingTable()
+        public SetBindingListView()
         {
         }
-        public SetBindingTable(IBuilderContext builderContext)
+        public SetBindingListView(IBuilderContext builderContext)
         {
             InitializeComponent();
-            DataContext = new SetBindingTableViewModel(builderContext);
+            DataContext = new SetBindingListViewViewModel(builderContext);
         }
-        public SetBindingTableViewModel ViewModel => this.DataContext as SetBindingTableViewModel;
+        public SetBindingListViewViewModel ViewModel => this.DataContext as SetBindingListViewViewModel;
         public void NewButtonClick(object sender, RoutedEventArgs e)
         {
             this.ViewModel.MyFieldInfosViewModel.Add(new MyFieldInfoViewModel(this.ViewModel.ColumnsList));
@@ -42,24 +42,24 @@ namespace jQueryTreeTable.Control
             }
         }
     }
-    public class SetBindingTableViewModel : PropertyChangedObjectBase
+    public class SetBindingListViewViewModel : PropertyChangedObjectBase
     {
         public IBuilderContext BuilderContext { get; set; }
-        public SetBindingTableViewModel(IBuilderContext context)
+        public SetBindingListViewViewModel(IBuilderContext context)
         {
             this.BuilderContext = context;
         }
 
-        public TableInfo Model
+        public ListViewInfo Model
         {
-            get => new TableInfo(TableName, ID, RelatedParentID, ConverMyFieldInfoViewModel(MyFieldInfosViewModel));
+            get => new ListViewInfo(ListViewName, ID, RelatedParentID, ConverMyFieldInfoViewModel(MyFieldInfosViewModel));
             set
             {
                 if (value == null)
                 {
                     return;
                 }
-                TableName = value.TableName;
+                ListViewName = value.ListViewName;
                 ID = value.ID;
                 RelatedParentID = value.RelatedParentID;
                 foreach (var myFieldInfo in value.MyFieldInfos)
@@ -72,15 +72,15 @@ namespace jQueryTreeTable.Control
                 }
             }
         }
-        private string tableName;
-        public string TableName
+        private string listViewName;
+        public string ListViewName
         {
-            get => tableName;
+            get => listViewName;
             set
             {
-                if (this.tableName != value)
+                if (this.listViewName != value)
                 {
-                    this.tableName = value;
+                    this.listViewName = value;
                     this.OnPropertyChanged();
                     this.OnPropertyChanged(nameof(ColumnsList));
 
@@ -88,10 +88,10 @@ namespace jQueryTreeTable.Control
             }
         }
 
-        public List<string> TablesList
+        public List<string> ListViewsList
         => BuilderContext?.EnumAllListViewInfos(BuilderContext.PageName).Select(t => { return t.ListViewName; }).ToList() ?? new List<string>();
         public List<string> ColumnsList
-        => string.IsNullOrEmpty(TableName) ? new List<string>() : (BuilderContext?.EnumAllListViewInfos(BuilderContext.PageName).FirstOrDefault(t => t.ListViewName == TableName)?.GetAllColumnNames());
+        => string.IsNullOrEmpty(ListViewName) ? new List<string>() : (BuilderContext?.EnumAllListViewInfos(BuilderContext.PageName).FirstOrDefault(t => t.ListViewName == ListViewName)?.GetAllColumnNames());
 
         private ObservableCollection<MyFieldInfoViewModel> myFieldInfos;
         public ObservableCollection<MyFieldInfoViewModel> MyFieldInfosViewModel
