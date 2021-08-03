@@ -20,6 +20,7 @@
         });
         return container;
     };
+
     jQueryTreeTable.prototype.getListViewData = function (cellTypeMetaData) {
         var listViewName = cellTypeMetaData.SetBindingListView.ListViewName;
         var id = cellTypeMetaData.SetBindingListView.ID;
@@ -43,7 +44,7 @@
             listViewData.push(map);
         }
         return listViewData;
-    }
+    };
 
     jQueryTreeTable.prototype.createTable = function (cellTypeMetaData, data) {
         var id = cellTypeMetaData.SetBindingListView.ID;
@@ -81,7 +82,7 @@
         innerContainer.append(tbody);
 
         return innerContainer;
-    }
+    };
 
     jQueryTreeTable.prototype.decorateTable = function (unfoldingMethod) {
         var id = "#" + this.ID;
@@ -99,7 +100,7 @@
             self.CellElement.Value = this.dataset.ttId;
             self.commitValue();
         });
-    }
+    };
     //jQueryTreeTable要求表的记录顺序和展示顺序相同
     jQueryTreeTable.prototype.reSortTable = function (cellTypeMetaData, tableData) {
         var id = cellTypeMetaData.SetBindingListView.ID;
@@ -112,7 +113,7 @@
             }
         }
         return data;
-    }
+    };
 
     jQueryTreeTable.prototype.addTreeNode = function (tableData, data, index, relatedParentID, id) {
         var sign = false;
@@ -126,7 +127,7 @@
         if (sign === false) {
             return;
         }
-    }
+    };
 
     jQueryTreeTable.prototype.getValueFromElement = function () {
         return this.CellElement.Value;
@@ -143,13 +144,13 @@
 
         var trList = $("#" + this.ID + "t tbody").children("tr");
 
-        for (var i = 0; i < trList.length; i++){
+        for (var i = 0; i < trList.length; i++) {
             if (trList[i].dataset.ttId === ("" + value)) {
                 $(trList[i]).not(this).removeClass("selected");
                 $(trList[i]).toggleClass("selected");
             }
         };
-    }
+    };
 
     jQueryTreeTable.prototype.disable = function () {
         _super.prototype.disable.call(this);
