@@ -81,39 +81,6 @@ namespace jQueryTreeTable
                 ? new HyperlinkEditorSetting(new SetBindingListViewCommand(builderContext))
                 : base.GetEditorSetting(property, builderContext);
         }
-
-        private List<Dictionary<string, object>> ReSortListView(List<Dictionary<string, object>> ListViewData, string relatedParentID, string id)
-        {
-            List<Dictionary<string, object>> data = new List<Dictionary<string, object>>();
-            for (int i = 0; i < ListViewData.Count; i++)
-            {
-                if (ListViewData[i][relatedParentID] == null)
-                {
-                    data.Add(ListViewData[i]);
-                    AddTreeNode(ListViewData, data, i, relatedParentID, id);
-                }
-            }
-            return data;
-        }
-
-        private void AddTreeNode(List<Dictionary<string, object>> ListViewData, List<Dictionary<string, object>> data, int index, string relatedParentID, string id)
-        {
-            bool sign = false;
-            for (int i = 0; i < ListViewData.Count; i++)
-            {
-                if (string.Equals(ListViewData[i][relatedParentID], ListViewData[index][id]))
-                {
-                    data.Add(ListViewData[i]);
-                    sign = true;
-                    AddTreeNode(ListViewData, data, i, relatedParentID, id);
-                }
-            }
-            if (sign == false)
-            {
-                return;
-            }
-        }
-
     }
     public class SetBindingListViewCommand : ICommand
     {

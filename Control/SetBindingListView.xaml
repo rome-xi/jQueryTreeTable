@@ -8,15 +8,16 @@
              d:DesignHeight="546" d:DesignWidth="392">
     <Grid Margin="0,0,0,0">
         <Label Content="选择表格" HorizontalContentAlignment="Center" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="97" Height="30" FontSize="16"/>
-        <ComboBox x:Name="TableList" AutomationProperties.AutomationId="TableListCombo" ItemsSource="{Binding ListViewsList}" SelectedValue="{Binding ListViewName}" HorizontalAlignment="Left" Margin="114,10,10,0" VerticalAlignment="Top" Width="268" Height="31"/>
+        <ComboBox x:Name="TableList" AutomationProperties.AutomationId="TableListCombo" ItemsSource="{Binding ListViewsList}" SelectedValue="{Binding ListViewName}" Margin="114,10,10,0" VerticalAlignment="Top" VerticalContentAlignment="Center" Height="31"/>
         <Label Content="选择ID列" HorizontalContentAlignment="Center" HorizontalAlignment="Left" Margin="10,60,0,0" VerticalAlignment="Top" Width="97" Height="30" FontSize="16"/>
-        <ComboBox AutomationProperties.AutomationId="IDListCombo" ItemsSource="{Binding ColumnsList}" SelectedValue="{Binding ID}" HorizontalAlignment="Left" Margin="114,60,10,0" VerticalAlignment="Top" Width="268" Height="31"/>
+        <ComboBox AutomationProperties.AutomationId="IDListCombo" ItemsSource="{Binding ColumnsList}" SelectedValue="{Binding ID}" Margin="114,60,10,0" VerticalAlignment="Top" VerticalContentAlignment="Center" Height="31"/>
         <Label Content="选择关联列" HorizontalContentAlignment="Center" HorizontalAlignment="Left" Margin="10,110,0,0" VerticalAlignment="Top" Width="97" Height="30" FontSize="16"/>
-        <ComboBox AutomationProperties.AutomationId="RelatedColumnsListCombo" ItemsSource="{Binding ColumnsList}" SelectedValue="{Binding RelatedParentID}" HorizontalAlignment="Left" Margin="114,110,10,10" VerticalAlignment="Top" Width="268" Height="30"/>
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,120,10,300">
-            <Button Width="80" Click="NewButtonClick" Height="30" Content="新增字段" Margin="10,0,0,20"/>
-            <Button Width="80" Click="DeleteButtonClick" Height="30" Content="删除字段" Margin="10,0,0,20"/>
+        <ComboBox AutomationProperties.AutomationId="RelatedColumnsListCombo" ItemsSource="{Binding ColumnsList}" SelectedValue="{Binding RelatedParentID}" Margin="114,110,10,0" VerticalAlignment="Top" VerticalContentAlignment="Center" Height="30"/>
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10,120,10,300">
+            <Button Width="80" Click="NewButtonClick" Height="30" Content="新增字段" Margin="0,0,0,20"/>
+            <Button Width="80" Click="DeleteButtonClick" Height="30" Content="删除字段" Margin="10,38,0,58"/>
         </StackPanel>
+
         <ListView x:Name="ListView" Margin="10,200,10,10" ItemsSource="{Binding MyFieldInfosViewModel}">
             <ListView.View>
                 <GridView>
@@ -24,7 +25,7 @@
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <Grid>
-                                    <ComboBox AutomationProperties.AutomationId="RelatedColumnsListCombo" ItemsSource="{Binding FieldList}" SelectedValue="{Binding ShowField}" Width="170" Height="25" Margin="0,3,0,0" Grid.ColumnSpan="1" />
+                                    <ComboBox AutomationProperties.AutomationId="RelatedColumnsListCombo" ItemsSource="{Binding FieldList}" SelectedValue="{Binding ShowField}" Width="170" Height="25" Margin="0,3,0,0" Grid.ColumnSpan="1"  />
                                 </Grid>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
@@ -33,7 +34,7 @@
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <Grid>
-                                    <TextBox BorderBrush="Gray" BorderThickness="1" Text="{Binding FieldName, Mode=TwoWay}" Width="170" Height="25" Margin="0,3,0,0"/>
+                                    <TextBox BorderBrush="Gray" BorderThickness="1" Text="{Binding FieldName, Mode=TwoWay}" Width="170" Height="25" Margin="0,3,0,0" />
                                 </Grid>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>

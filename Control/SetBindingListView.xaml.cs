@@ -83,7 +83,8 @@ namespace jQueryTreeTable.Control
                     this.listViewName = value;
                     this.OnPropertyChanged();
                     this.OnPropertyChanged(nameof(ColumnsList));
-
+                    MyFieldInfosViewModel.Clear();
+                    this.OnPropertyChanged(nameof(MyFieldInfosViewModel));
                 }
             }
         }
