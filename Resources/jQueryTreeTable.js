@@ -17,6 +17,7 @@
             container.append(innerContainer);
             self.decorateTable(unfoldingMethod);
             self.selectTreeNode(self.getValueFromElement());
+            self.bindEvents(cellTypeMetaData);
         });
         return container;
     };
@@ -39,11 +40,37 @@
             var map = new Map();
             for (var j = 0; j < queryFields.length; j++) {
                 var queryField = "" + queryFields[j];
-                map.set(queryFields[j], listView.getValue(i, queryField));
+                map.set(queryFields[j], listView.getText(i, queryField));
             }
             listViewData.push(map);
         }
         return listViewData;
+    };
+    jQueryTreeTable.prototype.reloadData = function () {
+        var self = this;
+        var container = $("#" + self.ID);
+        container.empty();
+        var cellTypeMetaData = self.CellElement.CellType;
+        var unfoldingMethod = cellTypeMetaData.SetUnfoldingMethod;
+        var listViewData = self.getListViewData(cellTypeMetaData);
+        var data = self.reSortTable(cellTypeMetaData, listViewData);
+        var innerContainer = self.createTable(cellTypeMetaData, data);
+        container.append(innerContainer);
+        self.decorateTable(unfoldingMethod);
+        self.selectTreeNode(self.getValueFromElement());
+    };
+
+    jQueryTreeTable.prototype.bindEvents = function (cellTypeMetaData) {
+        var self = this;
+        var listViewName = cellTypeMetaData.SetBindingListView.ListViewName;
+        var listView = Forguncy.Page.getListView(listViewName);
+        listView.bind("reloaded", function () {
+            Forguncy.DelayRefresh.Push(self, function () {
+                Forguncy.DelayRefresh.Push(self, function () {
+                    self.reloadData();
+                }, "jQueryTreeTable_reloaded1");
+            }, "jQueryTreeTable_reloaded2");
+        });
     };
 
     jQueryTreeTable.prototype.createTable = function (cellTypeMetaData, data) {
@@ -89,11 +116,12 @@
         var self = this;
 
         $(id).css('overflow', 'auto');
-        $(id).css('height', '100%');
+        $(id).css('height', "100%");
         $(id + "t").treetable({ expandable: true });
         if (unfoldingMethod === 1) {
             $(id + "t").treetable('expandAll');
         }
+        this.addStyle(id);
         $(id + "t tbody").on("mousedown", "tr", function () {
             $(".selected").not(this).removeClass("selected");
             $(this).toggleClass("selected");
@@ -101,13 +129,24 @@
             self.commitValue();
         });
     };
+
+    jQueryTreeTable.prototype.addStyle = function (id) {
+        var cellElement = this.CellElement;
+        var normalStyle = cellElement.StyleTemplate.Styles.TreeTable.NormalStyle;
+        var normalBgColor = Forguncy.ConvertToCssColor(normalStyle.Background);
+        var normalBorder = Forguncy.ConvertToCssColor(normalStyle.BorderString);
+        var normalFontColor = Forguncy.ConvertToCssColor(normalStyle.FontColor);
+        $(id + "t").css('border', normalBorder);
+        $("tr").css('color', normalFontColor);
+        $("tr").css('background', normalBgColor);
+    };
     //jQueryTreeTable要求表的记录顺序和展示顺序相同
     jQueryTreeTable.prototype.reSortTable = function (cellTypeMetaData, tableData) {
         var id = cellTypeMetaData.SetBindingListView.ID;
         var relatedParentID = cellTypeMetaData.SetBindingListView.RelatedParentID;
         var data = new Array();
         for (var i = 0; i < tableData.length; i++) {
-            if (tableData[i].get(relatedParentID) === null) {
+            if (tableData[i].get(relatedParentID) === "") {
                 data.push(tableData[i]);
                 this.addTreeNode(tableData, data, i, relatedParentID, id);
             }

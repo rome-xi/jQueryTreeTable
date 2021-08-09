@@ -36,8 +36,15 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CommonUtilities">
+      <HintPath>C:\Program Files (x86)\Forguncy 7\Website\designerBin\CommonUtilities.dll</HintPath>
+    </Reference>
     <Reference Include="Forguncy.Commands">
       <HintPath>C:\Program Files (x86)\Forguncy 7\Website\designerBin\Forguncy.Commands.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Forguncy.Commands.Design">
+      <HintPath>C:\Program Files (x86)\Forguncy 7\Website\designerBin\Forguncy.Commands.Design.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="GrapeCity.Forguncy.CellTypes">
@@ -84,6 +91,7 @@
     <None Include="PluginConfig.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Resource Include="Resources\ipad.jpg" />
     <Content Include="Resources\jQueryTreeTable.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -102,6 +110,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\jquery.treetable.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\StyleTemplate\jQueryTreeTableStyle.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Resources\treetable.js">

@@ -8,14 +8,17 @@ using System.Windows;
 using System.Windows.Input;
 using jQueryTreeTable.Control;
 using System.Windows.Controls;
-using System.Windows.Data;
-using Newtonsoft.Json;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.IO;
+using CommonUtilities;
 
 namespace jQueryTreeTable
 {
     [Designer("jQueryTreeTable.jQueryTreeTableDesigner, jQueryTreeTable")]
     [Icon("pack://application:,,,/jQueryTreeTable;component/Resources/Icon.png")]
-    public class jQueryTreeTable : CellType, IReferenceListView, IReferenceListViewColumn
+    [jQueryTreeTableStyleTemplateSupport]
+    public class jQueryTreeTable : CellType, IReferenceListView, IReferenceListViewColumn, IStyleTemplateSupport
     {
         public jQueryTreeTable()
         {
@@ -29,6 +32,13 @@ namespace jQueryTreeTable
 
         [DisplayName("设置展开方式")]
         public UnfoldingMethod SetUnfoldingMethod
+        {
+            get; set;
+        }
+
+        [DefaultValue(null)]
+        [Browsable(false)]
+        public string TemplateKey
         {
             get; set;
         }
@@ -80,6 +90,20 @@ namespace jQueryTreeTable
             return property.Name == nameof(jQueryTreeTable.SetBindingListView)
                 ? new HyperlinkEditorSetting(new SetBindingListViewCommand(builderContext))
                 : base.GetEditorSetting(property, builderContext);
+        }
+
+        public override FrameworkElement GetDrawingControl(ICellInfo cellInfo, IDrawingHelper drawingHelper)
+        {
+            Grid grid = new Grid();
+            Image image = new Image();
+            image.Source = new BitmapImage(new Uri("pack://application:,,,/jQueryTreeTable;component/Resources/ipad.jpg", UriKind.RelativeOrAbsolute));
+            image.Stretch = Stretch.Uniform;
+            image.VerticalAlignment = VerticalAlignment.Center;
+            image.HorizontalAlignment = HorizontalAlignment.Center;
+
+            grid.Children.Add(image);
+
+            return grid;
         }
     }
     public class SetBindingListViewCommand : ICommand
@@ -193,5 +217,58 @@ namespace jQueryTreeTable
     {
         默认收起,
         默认展开
+    }
+
+
+    public class jQueryTreeTableStyleTemplateSupportAttribute : CellTypeStyleTemplateSupportAttribute
+    {
+        protected const CellStates SupportStates = CellStates.Normal | CellStates.Selected;
+
+        private SupportStyles DefaultSupportStyles =
+                SupportStyles.BackgroundColor |
+                SupportStyles.BackgroundGradient |
+                SupportStyles.ForegroundColor |
+                SupportStyles.Border |
+                SupportStyles.Opacity;
+        public jQueryTreeTableStyleTemplateSupportAttribute()
+        {
+            TemplateParts = new List<TemplatePart>()
+            {
+                new TemplatePart() { Name = "TreeTable", SupportStates = SupportStates, SupportStyles = DefaultSupportStyles }
+            };
+        }
+
+        public override List<TemplatePart> TemplateParts { get; }
+
+
+        List<CellTypeStyleTemplate> presetTemplates;
+        public override List<CellTypeStyleTemplate> PresetTemplates
+        {
+            get
+            {
+                if (presetTemplates == null)
+                {
+                    presetTemplates = MakePresetStyleTemplates();
+                }
+                return presetTemplates;
+            }
+        }
+
+        public override string DefaultTemplateKey => "Style1";
+
+        protected string StyleFileName => "jQueryTreeTableStyle";
+
+        private List<CellTypeStyleTemplate> MakePresetStyleTemplates()
+        {
+            var dllDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location.ToString());
+            var jsPath = System.IO.Path.Combine(dllDir, "Resources", "StyleTemplate", StyleFileName + ".js");
+            var json = File.ReadAllText(System.IO.Path.GetFullPath(jsPath));
+            var index = json.LastIndexOf("];");
+            if (index > 0)
+            {
+                json = json.Substring(0, index + 1) + json.Substring(index + 2, json.Length - index - 2);
+            }
+            return JsonUtilities.FromJsonString<List<CellTypeStyleTemplate>>(json);
+        }
     }
 }
