@@ -38,6 +38,7 @@
   <ItemGroup>
     <Reference Include="CommonUtilities">
       <HintPath>C:\Program Files (x86)\Forguncy 7\Website\designerBin\CommonUtilities.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Forguncy.Commands">
       <HintPath>C:\Program Files (x86)\Forguncy 7\Website\designerBin\Forguncy.Commands.dll</HintPath>
@@ -88,20 +89,20 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Resources\TreeTableLogocopy.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\TreeTableIcon.png" />
+    <None Include="Resources\TreeTableLogo.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="PluginConfig.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Resource Include="Resources\ipad.jpg" />
     <Content Include="Resources\jQueryTreeTable.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Resources\jQueryTreeTable.js">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Icon.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\PluginLogo.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

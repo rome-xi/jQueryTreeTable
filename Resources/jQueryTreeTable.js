@@ -122,24 +122,34 @@
             $(id + "t").treetable('expandAll');
         }
         this.addStyle(id);
+        if (this.CellElement.CellType.GridLineShow) {
+            this.printGrid(id);
+        }
+    };
+
+    jQueryTreeTable.prototype.addStyle = function (id) {
+        var self = this;
+        $(id + "t thead").addClass("jQueryTreeTablejQueryTreeTable-" + this.CellElement.CellType.TemplateKey + "-tableHead");
+        $(id + "t tbody tr").addClass("jQueryTreeTablejQueryTreeTable-" + this.CellElement.CellType.TemplateKey + "-tableBody");
         $(id + "t tbody").on("mousedown", "tr", function () {
-            $(".selected").not(this).removeClass("selected");
-            $(this).toggleClass("selected");
+            if (!$(this).hasClass("selected")) {
+                $(".selected").not(this).removeClass("selected");
+                $(this).toggleClass("selected");
+            }
             self.CellElement.Value = this.dataset.ttId;
             self.commitValue();
         });
     };
 
-    jQueryTreeTable.prototype.addStyle = function (id) {
-        var cellElement = this.CellElement;
-        var normalStyle = cellElement.StyleTemplate.Styles.TreeTable.NormalStyle;
-        var normalBgColor = Forguncy.ConvertToCssColor(normalStyle.Background);
-        var normalBorder = Forguncy.ConvertToCssColor(normalStyle.BorderString);
-        var normalFontColor = Forguncy.ConvertToCssColor(normalStyle.FontColor);
-        $(id + "t").css('border', normalBorder);
-        $("tr").css('color', normalFontColor);
-        $("tr").css('background', normalBgColor);
+    jQueryTreeTable.prototype.printGrid = function (id) {
+        var color = Forguncy.ConvertToCssColor(this.CellElement.CellType.GridLineColor);
+        var width = this.CellElement.CellType.GridLineWidth;
+        var headColor = Forguncy.ConvertToCssColor(this.CellElement.StyleTemplate.Styles.tableHead.NormalStyle.Background);
+
+        $(id + " th").css("border", width + "px solid " + color);
+        $(id + " td").css("border", width + "px solid " + color);
     };
+
     //jQueryTreeTable要求表的记录顺序和展示顺序相同
     jQueryTreeTable.prototype.reSortTable = function (cellTypeMetaData, tableData) {
         var id = cellTypeMetaData.SetBindingListView.ID;

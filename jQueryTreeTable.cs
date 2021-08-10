@@ -16,12 +16,15 @@ using CommonUtilities;
 namespace jQueryTreeTable
 {
     [Designer("jQueryTreeTable.jQueryTreeTableDesigner, jQueryTreeTable")]
-    [Icon("pack://application:,,,/jQueryTreeTable;component/Resources/Icon.png")]
+    [Icon("pack://application:,,,/jQueryTreeTable;component/Resources/TreeTableIcon.png")]
     [jQueryTreeTableStyleTemplateSupport]
     public class jQueryTreeTable : CellType, IReferenceListView, IReferenceListViewColumn, IStyleTemplateSupport
     {
         public jQueryTreeTable()
         {
+            this.GridLineShow = false;
+            this.GridLineWidth = 1;
+            this.GridLineColor = "#A5A5A5";
         }
 
         [DisplayName("设置绑定表格参数")]
@@ -32,6 +35,26 @@ namespace jQueryTreeTable
 
         [DisplayName("设置展开方式")]
         public UnfoldingMethod SetUnfoldingMethod
+        {
+            get; set;
+        }
+
+        [CategoryHeader("网格线设置")]
+        [DisplayName("是否显示网格线")]
+        public bool GridLineShow
+        {
+            get; set;
+        }
+
+        [DisplayName("网格线宽度")]
+        public int GridLineWidth
+        {
+            get; set;
+        }
+
+        [DisplayName("网格线颜色")]
+        [ColorProperty]
+        public string GridLineColor
         {
             get; set;
         }
@@ -80,7 +103,15 @@ namespace jQueryTreeTable
 
         public override string ToString()
         {
-            return "树型表";
+            return "树型表格";
+        }
+
+        public override bool GetDesignerPropertyVisible(string propertyName)
+        {
+            if (string.Equals(propertyName, nameof(GridLineWidth)) || string.Equals(propertyName, nameof(GridLineColor))) {
+                return GridLineShow;
+            }
+            return base.GetDesignerPropertyVisible(propertyName);
         }
     }
     public class jQueryTreeTableDesigner : CellTypeDesigner<jQueryTreeTable>
@@ -96,7 +127,7 @@ namespace jQueryTreeTable
         {
             Grid grid = new Grid();
             Image image = new Image();
-            image.Source = new BitmapImage(new Uri("pack://application:,,,/jQueryTreeTable;component/Resources/ipad.jpg", UriKind.RelativeOrAbsolute));
+            image.Source = new BitmapImage(new Uri("pack://application:,,,/jQueryTreeTable;component/Resources/TreeTableLogocopy.png", UriKind.RelativeOrAbsolute));
             image.Stretch = Stretch.Uniform;
             image.VerticalAlignment = VerticalAlignment.Center;
             image.HorizontalAlignment = HorizontalAlignment.Center;
@@ -228,13 +259,13 @@ namespace jQueryTreeTable
                 SupportStyles.BackgroundColor |
                 SupportStyles.BackgroundGradient |
                 SupportStyles.ForegroundColor |
-                SupportStyles.Border |
                 SupportStyles.Opacity;
         public jQueryTreeTableStyleTemplateSupportAttribute()
         {
             TemplateParts = new List<TemplatePart>()
             {
-                new TemplatePart() { Name = "TreeTable", SupportStates = SupportStates, SupportStyles = DefaultSupportStyles }
+                new TemplatePart() { Name = "tableHead", SupportStates = CellStates.Normal, SupportStyles = DefaultSupportStyles },
+                new TemplatePart() { Name = "tableBody", SupportStates = SupportStates, SupportStyles = DefaultSupportStyles }
             };
         }
 
